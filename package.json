@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "mocha": "^10.4.0",
+    "supertest": "^7.0.0"
   }
 }
