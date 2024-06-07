@@ -7,6 +7,11 @@ pipeline {
   }
 
   stages {
+    stage('Limpiar Contenedores') {
+            steps {
+                    sh 'docker stop $(docker ps -q)'
+            }
+        }
     stage ('Build') {
       steps {
         script {
@@ -28,7 +33,7 @@ pipeline {
     stage ('Deploy') {
       steps {
         script {
-          docker.image(DOCKERIMAGE).run('-d -p 3009:3000')
+          docker.image(DOCKERIMAGE).run('-d -p 3000:3000')
         }
       }
     }
