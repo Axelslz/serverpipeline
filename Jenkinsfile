@@ -1,41 +1,47 @@
 pipeline {
-  agent any
+    agent any
 
-  environment {
-    DOCKERIMAGE = "pipeline-hello-world"
-    HOME = "."
-  }
-
-  stages {
-    stage('Limpiar Contenedores') {
+    stages {
+        stage('Declarative: Checkout SCM') {
             steps {
-                    sh 'docker stop $(docker ps -q)'
+                checkout scm
             }
         }
-    stage ('Build') {
-      steps {
-        script {
-          docker.build(DOCKERIMAGE)
+        stage('Limpiar Contenedores') {
+            steps {
+                script {
+                    def containers = sh(script: 'docker ps -q', returnStdout: true).trim()
+                    if (containers) {
+                        sh "docker stop ${containers}"
+                    } else {
+                        echo 'No running containers to stop.'
+                    }
+                }
+            }
         }
-      }
-    }
-
-    stage ('Test') {
-      steps {
-        script {
-          docker.image(DOCKERIMAGE).inside {
-            sh 'npm install'
-            sh 'npm test'
-          }
+        stage('Build') {
+            steps {
+                script {
+                    docker.build('pipeline-hello-world')
+                }
+            }
         }
-      }
-    }
-    stage ('Deploy') {
-      steps {
-        script {
-          docker.image(DOCKERIMAGE).run('-d -p 3000:3000')
+        stage('Test') {
+            steps {
+                script {
+                    docker.image('pipeline-hello-world').inside {
+                        sh 'npm install'
+                        sh 'npm test'
+                    }
+                }
+            }
         }
-      }
+        stage('Deploy') {
+            steps {
+                script {
+                    docker.run('pipeline-hello-world', '-d -p 3000:3000')
+                }
+            }
+        }
     }
-  }
 }
